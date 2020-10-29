@@ -1,3 +1,5 @@
+import gym
+
 def qLearning(env):
     currentState = env.reset()
     while True:
@@ -19,7 +21,7 @@ def qLearning(env):
         currentState = newState
         
 if __name__ == "__main__": 
-    env = HetNetEnv()
+    env = gym.make('gym_hetnet:hetnet-v0')
     iter = 10
     for i in range(iter):
         qLearning(env)
