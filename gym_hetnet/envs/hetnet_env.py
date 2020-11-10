@@ -12,6 +12,27 @@ map_state = {
   'S5f2': 6
 }
 
+Events = {
+    1:  ("enter","macro",1),
+    2:  ("enter","macro",2),
+    3:  ("enter","macro",3),
+    4:  ("enter","macro",4),
+    5:  ("enter","fento1",""),
+    6:  ("enter","macro",5),
+    7:  ("enter","fento2",""),
+    8:  ("handoff","fento1","out"),
+    9:  ("handoff","fento1","in"),
+    10: ("handoff","fento2","out"),
+    11: ("handoff","fento2","in"),
+    12: ("leave","macro",1),
+    13: ("leave","macro",2),
+    14: ("leave","macro",3),
+    15: ("leave","macro",4),
+    16: ("leave","fento1",""),
+    17: ("leave","macro",5),
+    18: ("leave","fento2","")
+}
+
 code_event_macro_in = [0,1,2,3,5,7,9]
 code_event_macro_out = [8,10,11,12,13,,14,16]
 
@@ -22,7 +43,7 @@ class HetnetEnv(gym.Env):
     self.MacroMaxCapacity = MacroMaxCapacity
     self.FentoMaxCapacity = FentoMaxCapacity
     self.observation_space = spaces.MultiDiscrete([MacroMaxCapacity,MacroMaxCapacity,MacroMaxCapacity, MacroMaxCapacity, FentoMaxCapacity, MacroMAxCapacity, FentoMaxCapacity, 17])
-    self.action_space = spaces.Discrete(10)
+    self.action_space = spaces.Discrete(3)
   
 
   def __accept_connection_Macro():
@@ -54,8 +75,21 @@ class HetnetEnv(gym.Env):
   def step(self, action):
     assert self.action_space.contains(action)
     reward = 0
-    if action == 10: # If action is continue, do nothing and continue
+    if action == 2: # If action is continue, do nothing and continue
       return self.observation_space.nvec, reward, False, {}
+
+    actual_event = self.action_space.nvec[-1]
+    
+    elif action == 0: # If action in accept
+      Events[actual_event] == Lo que tiene que ver con macro 
+    
+    elif action == 1:
+
+    # This statement should be unreacheable.
+    else:  # But, just in case :D
+      raise Exception(f"Action: {action} not defined")
+
+
 
     elif action == 0: 
       if self.__Macro_connections() < self.MacroMaxCapacity: # Can accept
@@ -129,9 +163,7 @@ class HetnetEnv(gym.Env):
       else: #  Impossible to do handoff
         reward = -1
     
-    # This statement should be unreacheable.
-    else:  # But, just in case :D
-      raise Exception(f"Action: {action} not defined")
+   
     
     # Finally, we used the observation space with the changes made by the action
     observation = self.observation_space.nvec
