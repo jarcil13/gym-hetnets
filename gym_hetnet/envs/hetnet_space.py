@@ -10,7 +10,7 @@ class HetnetSpace(Discrete):
 
     def sample(self):
         rand_index = self.np_random.randint(self.n)
-        return map_states[rand_index]
+        return self.map_index_state[rand_index]
 
     def contains(self,x):
         if isinstance(x,int):
