@@ -1,16 +1,18 @@
 import numpy as np
 from gym.spaces import Discrete
+from state_generator import StateGenerator
 
 class HetnetSpace(Discrete):
 
-    def __init__(self, n):
-        self.map_index_state = np.array([[0,0,0],[1,0,1]]) # ya estan definidos
-        self.map_states_index = {"[0, 0, 0]": 0, "[1, 0, 1]":1}
-        super(HetnetSpace, self).__init__(n)
+    def __init__(self, maxCapacity=(2,2,2)):
+        maxMacro, maxFento1, maxFento2 = maxCapacity
+        state_generator = StateGenerator(maxMacro, maxFento1, maxFento2, debug=True)
+        self.map_index_state = state_generator.states
+        self.map_states_index = state_generator.indices
+        super(HetnetSpace, self).__init__(len(state_generator.states))
 
     def sample(self):
-        rand_index = self.np_random.randint(self.n)
-        return self.map_index_state[rand_index]
+        return self.np_random.randint(self.n)
 
     def contains(self,x):
         if isinstance(x,int):

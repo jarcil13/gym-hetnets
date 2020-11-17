@@ -93,7 +93,7 @@ class StateGenerator():
 
     states = []
     for s1 in range(S1+1):
-      self.logger.debug(f"S1={s1+1}/{S1}+1")
+      self.logger.debug(f"S1={s1+1}/{S1+1}")
       for s2 in range(S2+1):
         if (s1 + s2) > self.maxMacro: break
         for s3 in range(S3+1):

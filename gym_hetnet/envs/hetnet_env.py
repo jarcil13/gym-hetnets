@@ -1,6 +1,7 @@
 import gym
 from gym import error, utils
 from gym.utils import seeding
+from gym import spaces
 from hetnet_space import HetnetSpace
 
 map_state = {
@@ -43,23 +44,43 @@ class HetnetEnv(gym.Env):
   def __init__(self, MacroMaxCapacity=2, FentoMaxCapacity=1):
     self.MacroMaxCapacity = MacroMaxCapacity
     self.FentoMaxCapacity = FentoMaxCapacity
-    self.observation_space = HetnetSpace(1)#[MacroMaxCapacity,MacroMaxCapacity,MacroMaxCapacity, MacroMaxCapacity, FentoMaxCapacity, MacroMAxCapacity, FentoMaxCapacity, 17])
+    self.observation_space = HetnetSpace((2,2,2))
     self.action_space = spaces.Discrete(3)
+    self.reset()
   
-
-  def __accept_connection_Macro():
-    pass
-
-  def __release_connection_Macro():
-    pass
-    
+  def __setVariables(self,vars,):
+    self.s1   = vars[0]
+    self.s2   = vars[1]
+    self.s3   = vars[2]
+    self.s4m  = vars[3]
+    self.s5m  = vars[4]
+    self.s4f1 = vars[5]
+    self.s5f2 = vars[6]
+    self.e    = vars[7]
  
+  def stateToIndex(self):
+    vars = str([self.s1,self.s2,self.s3,self.s4m,self.s5m,self.s4f1,self.s5f2,self.e])
+    self.observation_space.map_state_index(vars)
+
   def __Macro_connections(self):
     state = self.observation_space.nvec
     return state[map_state['S1']] + state[map_state['S2']] + state[map_state['S3']] + state[map_state['S4M']] + state[map_state['S5M']]
   
+  # Action 0-accept 1-reject 2-continue
   def step(self, action):
     assert self.action_space.contains(action)
+    reward = 0
+    if action == 0:
+      return self., reward, False, {}
+    elif action == 1:
+      new_e = randEvent()
+      self.e = new_e
+      return self.stateToIndex(), reward, done(falta), {}
+    elif action == 2:
+    else:
+      raise Exception(f"Action: {action} not defined")
+
+    
     # reward = 0
     # if action == 2: # If action is continue, do nothing and continue
     #   return self.observation_space.nvec, reward, False, {}
@@ -88,7 +109,6 @@ class HetnetEnv(gym.Env):
     #     self.observation_space.nvec[map_state['S4f1']] += 1
     #   else:  # Can't accept connection to Fento 1 (S4). State impossible
     #     reward = -1
-
     # elif action == 2:
     #   if self.observation_space.nvec[map_state['S5f2']] < self.FentoMaxCapacity # Can accept
     #     self.observation_space.nvec[map_state['S5f2']] += 1
@@ -149,7 +169,7 @@ class HetnetEnv(gym.Env):
     #   else: #  Impossible to do handoff
     #     reward = -1
     
-   
+    
     
     # Finally, we used the observation space with the changes made by the action
     observation = self.observation_space.nvec
@@ -159,8 +179,9 @@ class HetnetEnv(gym.Env):
     return observation, reward, done, info
 
   def reset(self):
-    observation = self.observation_space.sample()
-    return observation
+    observation_index = self.observation_space.sample()
+    self.__setVariables(self.observation_space.map_index_state[observation_index])
+    return observation_index
 
   def render(self, mode='human'):
     raise NotImplementedError
