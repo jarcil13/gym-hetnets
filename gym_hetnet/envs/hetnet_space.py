@@ -1,6 +1,6 @@
 import numpy as np
 from gym.spaces import Discrete
-from state_generator import StateGenerator
+from gym_hetnet.envs.state_generator import StateGenerator
 
 class HetnetSpace(Discrete):
 
@@ -16,7 +16,7 @@ class HetnetSpace(Discrete):
 
     def contains(self,x):
         if isinstance(x,int):
-            return ( x <= len(self.map_index_index) )
+            return ( x <= len(self.map_index_state) )
         elif isinstance(x, list):
             return self.map_states_index.get(str(x),None) is not None
         elif isinstance(x,np.ndarray):

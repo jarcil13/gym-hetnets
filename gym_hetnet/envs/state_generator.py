@@ -58,7 +58,7 @@ class StateGenerator():
       self.logger.info("Index Generator in progress...")
       self.generateIndices()
       self.logger.info("Index Generator done")
-
+    
   def stateIsPossible(self,s1,s2,s3,s4m,s5m,s4f1,s5f2,e):
     eventType, cellType, comment = self.events[e]
     sessionsMacro = s1+s2+s3+s4m+s5m
@@ -109,7 +109,6 @@ class StateGenerator():
                       continue
                     state = [s1,s2,s3,s4m,s5m,s4f1,s5f2,e]
                     states.append(state)
-    states = np.array(states)
     self.states = states
     self.saveGeneratedStates()
 
@@ -125,7 +124,7 @@ class StateGenerator():
 
   def saveGeneratedStates(self):
     with open(self.file_name + ".pkl", "wb") as file:
-      np.save(file, self.states)
+      np.save(file, np.array(self.states))
 
   def loadGeneratedStates(self):
     if exists(self.file_name + '.pkl'):

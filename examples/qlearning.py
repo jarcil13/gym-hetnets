@@ -3,21 +3,21 @@ import matplotlib.pyplot as plt
 import gym
 import random
 
-# HYPERPARAMETERS
-train_episodes = 2000         # Total train episodes
-test_episodes = 100           # Total test episodes
-max_steps = 100               # Max steps per episode
-alpha = 0.7                   # Learning rate
-gamma = 0.618                 # Discounting rate
-
-# EXPLORATION / EXPLOITATION PARAMETERS
-epsilon = 1                   # Exploration rate
-max_epsilon = 1               # Exploration probability at start
-min_epsilon = 0.01            # Minimum exploration probability 
-decay_rate = 0.01             # Exponential decay rate for exploration prob
-
-
 def qLearning(env):
+
+    # HYPERPARAMETERS
+    train_episodes = 2000         # Total train episodes
+    test_episodes = 100           # Total test episodes
+    max_steps = 100               # Max steps per episode
+    alpha = 0.7                   # Learning rate
+    gamma = 0.618                 # Discounting rate
+
+    # EXPLORATION / EXPLOITATION PARAMETERS
+    epsilon = 1                   # Exploration rate
+    max_epsilon = 1               # Exploration probability at start
+    min_epsilon = 0.01            # Minimum exploration probability 
+    decay_rate = 0.01             # Exponential decay rate for exploration prob
+
     action_size = env.action_space.n
     state_size = env.observation_space.n
     print("Action space size: ", action_size)
@@ -25,7 +25,6 @@ def qLearning(env):
 
     # INITIALISE Q TABLE TO ZERO
     Q = np.zeros((state_size, action_size))
-
 
     # TRAINING PHASE
     training_rewards = []   # list of rewards
@@ -65,7 +64,6 @@ def qLearning(env):
         training_rewards.append(cumulative_training_rewards)
 
     print ("Training score over time: " + str(sum(training_rewards)/train_episodes))
-
 
 if __name__ == "__main__": 
     # CREATE THE ENVIRONMENT
