@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import gym
 import random
 
+from gym_hetnet.envs.hetnet_env import HetnetEnv
+
 def qLearning(env):
 
     # HYPERPARAMETERS
@@ -36,10 +38,9 @@ def qLearning(env):
         for step in range(max_steps):
             # Choose an action (a) among the possible states (s)
             exp_exp_tradeoff = random.uniform(0, 1)   # choose a random number
-            
             # If this number > epsilon, select the action corresponding to the biggest Q value for this state (Exploitation)
             if exp_exp_tradeoff > epsilon:
-                action = np.argmax(Q[state,:])        
+                action = np.argmax(Q[state,:])
             # Else choose a random action (Exploration)
             else:
                 action = env.action_space.sample()
@@ -67,6 +68,7 @@ def qLearning(env):
 
 if __name__ == "__main__": 
     # CREATE THE ENVIRONMENT
-    env = gym.make('gym_hetnet:hetnet-v0', MacroMaxCapacity=2, FentoMaxCapacity=1)
+    #env = gym.make('gym_hetnet:hetnet-v0', MacroMaxCapacity=2, FentoMaxCapacity=1)
+    env = HetnetEnv(2,1)
     # Run Q-Learning
     qLearning(env)

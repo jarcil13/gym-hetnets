@@ -25,24 +25,24 @@ class StateGenerator():
     self.E = 18
     self.file_name = fileName
     self.events = {
-      1:  ("enter","macro",1),
-      2:  ("enter","macro",2),
-      3:  ("enter","macro",3),
-      4:  ("enter","macro",4),
-      5:  ("enter","fento1",""),
-      6:  ("enter","macro",5),
-      7:  ("enter","fento2",""),
-      8:  ("handoff","fento1","out"),
-      9:  ("handoff","fento1","in"),
-      10: ("handoff","fento2","out"),
-      11: ("handoff","fento2","in"),
-      12: ("leave","macro",1),
-      13: ("leave","macro",2),
-      14: ("leave","macro",3),
-      15: ("leave","macro",4),
-      16: ("leave","fento1",""),
-      17: ("leave","macro",5),
-      18: ("leave","fento2","")
+      0:  ("enter","macro",1),
+      1:  ("enter","macro",2),
+      2:  ("enter","macro",3),
+      3:  ("enter","macro",4),
+      4:  ("enter","fento1",4),
+      5:  ("enter","macro",5),
+      6:  ("enter","fento2",5),
+      7:  ("handoff","fento1","out"),
+      8:  ("handoff","fento1","in"),
+      9: ("handoff","fento2","out"),
+      10: ("handoff","fento2","in"),
+      11: ("leave","macro",1),
+      12: ("leave","macro",2),
+      13: ("leave","macro",3),
+      14: ("leave","macro",4),
+      15: ("leave","fento1",4),
+      16: ("leave","macro",5),
+      17: ("leave","fento2",5)
     }
 
     if not self.loadGeneratedStates():
@@ -104,7 +104,7 @@ class StateGenerator():
               if (s1 + s2 + s3 + s4m + s5m) > self.maxMacro: break
               for s4f1 in range(S4F1+1):
                 for s5f2 in range(S5F2+1):
-                  for e in range(1,E+1):
+                  for e in range(E):
                     if not self.stateIsPossible(s1,s2,s3,s4m,s5m,s4f1,s5f2,e):
                       continue
                     state = [s1,s2,s3,s4m,s5m,s4f1,s5f2,e]

@@ -26,9 +26,9 @@ Events = {
     1:  ("enter","macro",2),
     2:  ("enter","macro",3),
     3:  ("enter","macro",4),
-    4:  ("enter","fento1",""),
+    4:  ("enter","fento1",4),
     5:  ("enter","macro",5),
-    6:  ("enter","fento2",""),
+    6:  ("enter","fento2",5),
     7:  ("handoff","fento1","out"),
     8:  ("handoff","fento1","in"),
     9: ("handoff","fento2","out"),
@@ -37,9 +37,9 @@ Events = {
     12: ("leave","macro",2),
     13: ("leave","macro",3),
     14: ("leave","macro",4),
-    15: ("leave","fento1",""),
+    15: ("leave","fento1",4),
     16: ("leave","macro",5),
-    17: ("leave","fento2","")
+    17: ("leave","fento2",5)
 }
 
 code_event_macro_in = [0,1,2,3,5,7,9]
@@ -51,7 +51,7 @@ class HetnetEnv(gym.Env):
   def __init__(self, MacroMaxCapacity=2, FentoMaxCapacity=1):
     self.MacroMaxCapacity = MacroMaxCapacity
     self.FentoMaxCapacity = FentoMaxCapacity
-    self.observation_space = HetnetSpace((2,2,2))
+    self.observation_space = HetnetSpace((MacroMaxCapacity,FentoMaxCapacity,FentoMaxCapacity))
     self.action_space = spaces.Discrete(3)
     self.reset()
   
@@ -67,7 +67,7 @@ class HetnetEnv(gym.Env):
  
   def stateToIndex(self):
     vars = str([self.s1,self.s2,self.s3,self.s4m,self.s5m,self.s4f1,self.s5f2,self.e])
-    self.observation_space.map_states_index[vars]
+    return self.observation_space.map_states_index[vars]
   
   def getValidEvents(self):
     s1,s2,s3,s4m,s5m=self.s1, self.s2, self.s3, self.s4m, self.s5m
@@ -114,54 +114,60 @@ class HetnetEnv(gym.Env):
     return validEvents
 
   def increaseUsers(self,zone,cell,amount):
-    if zone == 1: self.s1 += amount
-    elif zone == 2: self.s2 += amount
-    elif zone == 3: self.s2 += amount
+    s1,s2,s3,s4m,s5m=self.s1, self.s2, self.s3, self.s4m, self.s5m
+    s4f1,s5f2,e = self.s4f1, self.s5f2, self.e
+    if zone == 1: s1 += amount
+    elif zone == 2: s2 += amount
+    elif zone == 3: s3 += amount
     elif zone == 4:
-      if cell == "macro": self.s4m += amount
-      elif cell == "fento1": self.s4f1 += amount
+      if cell == "macro": s4m += amount
+      elif cell == "fento1": s4f1 += amount
       else: raise Exception("Cell is invalid")
     elif zone == 5:
-      if cell == "macro": self.s5m += amount
-      elif cell == "fento2": self.s5f2 += amount
+      if cell == "macro": s5m += amount
+      elif cell == "fento2": s5f2 += amount
       else: raise Exception("Cell is invalid")
     else: raise Exception("Zone is invalid")
+    return [s1,s2,s3,s4m,s5m,s4f1,s5f2,e]
 
   def acceptEntrance(self,zone,cell):
-    self.increaseUsers(zone,cell,1)
+    return self.increaseUsers(zone,cell,1)
 
   def continueDeparture(self,zone,cell):
-    self.increaseUsers(zone,cell,-1)
+    return self.increaseUsers(zone,cell,-1)
 
   def acceptHandoff(self, zone, cell):
+    s1,s2,s3,s4m,s5m=self.s1, self.s2, self.s3, self.s4m, self.s5m
+    s4f1,s5f2,e = self.s4f1, self.s5f2, self.e
     #assert() TODO
     aux = -1
     if zone == "out":
       aux = 1
     if cell == "fento1":
-      self.s4f1 -= aux
-      self.s3 += aux
+      s4f1 -= aux
+      s3 += aux
     elif cell == "fento2":
-      self.s5f2 += aux
-      self.s3 -= aux
+      s5f2 += aux
+      s3 -= aux
     else:
         raise Exception(f"Zone '{zone}' is invalid")
+    return [s1,s2,s3,s4m,s5m,s4f1,s5f2,e]
 
   # Action 0-accept 1-reject 2-continue
   def step(self, action):
-    print()
     assert self.action_space.contains(action)
     eventType, eventCell, eventZone = Events[self.e]
     reward = 0
     isFinalState = False
+    newState = []
     info = {}
 
     if action == 0:
       if eventType == "enter":
-        self.acceptEntrance(eventZone, eventCell)
+        newState = self.acceptEntrance(eventZone, eventCell)
         reward = 1
       elif eventType == "handoff":
-        self.acceptHandoff(eventZone, eventCell)
+        newState = self.acceptHandoff(eventZone, eventCell)
       else:
         reward = -1
     
@@ -171,11 +177,17 @@ class HetnetEnv(gym.Env):
 
     elif action == 2:
       if eventType == "leave":
-        self.continueDeparture(eventZone, eventCell)
+        newState = self.continueDeparture(eventZone, eventCell)
       else:
         reward = -1
-    else: # Esto no debería ser alcanzable pero por si algo....
+    else: # Error con acciones no existentes
       raise Exception("Action: not defined")
+
+    # Validar Nuevo Estado
+    if self.observation_space.contains(newState):
+      self.__setVariables(newState)
+    else:
+      reward = -1
 
     validEvents = self.getValidEvents()
     rand = _np.random.uniform(low=0, high=len(validEvents)-1)
