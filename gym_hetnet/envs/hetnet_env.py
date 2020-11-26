@@ -2,6 +2,7 @@ import gym
 from gym import error, utils
 from gym.utils import seeding
 from gym import spaces
+import numpy as _np 
 from gym_hetnet.envs.hetnet_space import HetnetSpace
 
 map_state = {
@@ -135,19 +136,20 @@ class HetnetEnv(gym.Env):
   def acceptHandoff(self, zone, cell):
     #assert() TODO
     aux = -1
-    if cell == "out":
+    if zone == "out":
       aux = 1
-    if zone == "fento1":
+    if cell == "fento1":
       self.s4f1 -= aux
       self.s3 += aux
-    elif zone == "fento2":
+    elif cell == "fento2":
       self.s5f2 += aux
       self.s3 -= aux
     else:
-        raise Exception("Zone: s invalid")
+        raise Exception(f"Zone '{zone}' is invalid")
 
   # Action 0-accept 1-reject 2-continue
   def step(self, action):
+    print()
     assert self.action_space.contains(action)
     eventType, eventCell, eventZone = Events[self.e]
     reward = 0
@@ -175,9 +177,9 @@ class HetnetEnv(gym.Env):
     else: # Esto no debería ser alcanzable pero por si algo....
       raise Exception("Action: not defined")
 
-    validEvents = getValidEvents()
-    rand = np.random.uniform(low=0, high=len(validEvents)-1)
-    self.e = validEvents[rand]
+    validEvents = self.getValidEvents()
+    rand = _np.random.uniform(low=0, high=len(validEvents)-1)
+    self.e = validEvents[int(rand)]
     return self.stateToIndex(), reward, isFinalState, info
 
   def reset(self):
