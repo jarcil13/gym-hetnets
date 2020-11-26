@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s %(levelname
 class StateGenerator():
 
   def __init__(self, maxMacro, maxFento1, maxFento2, fileName="hetnetState_serialized",debug=False):
-
+    fileName = fileName + "_" + str(maxMacro) + "_" + str(maxFento1) + "_" + str(maxFento2)
     # Logging stuff
     self.logger = logging.getLogger(__name__)
     if(debug):

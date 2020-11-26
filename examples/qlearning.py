@@ -5,12 +5,12 @@ import random
 
 from gym_hetnet.envs.hetnet_env import HetnetEnv
 
-def qLearning(env):
+def qLearning(env, train_episodes = 20000, max_steps=50):
 
     # HYPERPARAMETERS
-    train_episodes = 2000         # Total train episodes
+    #train_episodes = 20000         # Total train episodes
     test_episodes = 100           # Total test episodes
-    max_steps = 100               # Max steps per episode
+    #max_steps = 50               # Max steps per episode
     alpha = 0.7                   # Learning rate
     gamma = 0.618                 # Discounting rate
 
@@ -27,11 +27,13 @@ def qLearning(env):
 
     # INITIALISE Q TABLE TO ZERO
     Q = np.zeros((state_size, action_size))
+    visitas = np.zeros((state_size, action_size))
 
     # TRAINING PHASE
     training_rewards = []   # list of rewards
 
     for episode in range(train_episodes):
+        print("Episode: ",episode,"/",train_episodes)
         state = env.reset()    # Reset the environment
         cumulative_training_rewards = 0
         
@@ -47,6 +49,7 @@ def qLearning(env):
             
             # Perform the action (a) and observe the outcome state(s') and reward (r)
             new_state, reward, done, info = env.step(action)
+            visitas[state, action] += 1
 
             # Update the Q table using the Bellman equation: Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
             Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action]) 
@@ -66,9 +69,11 @@ def qLearning(env):
 
     print ("Training score over time: " + str(sum(training_rewards)/train_episodes))
 
+    return Q, visitas
+
 if __name__ == "__main__": 
     # CREATE THE ENVIRONMENT
     #env = gym.make('gym_hetnet:hetnet-v0', MacroMaxCapacity=2, FentoMaxCapacity=1)
     env = HetnetEnv(2,1)
     # Run Q-Learning
-    qLearning(env)
+    Q, visitas = qLearning(env)
