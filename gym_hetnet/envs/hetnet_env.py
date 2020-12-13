@@ -165,29 +165,31 @@ class HetnetEnv(gym.Env):
     if action == 0:
       if eventType == "enter":
         newState = self.acceptEntrance(eventZone, eventCell)
-        reward = 1
+        reward = self.getReward(action)
       elif eventType == "handoff":
         newState = self.acceptHandoff(eventZone, eventCell)
+        reward = self.getReward(action)
       else:
-        reward = -1
+        reward = self.getReward(action, action_is_possible=False)
     
     elif action == 1:
       if eventType == "leave":
-        reward = -1
+        reward = self.getReward(action, action_is_possible=False)
 
     elif action == 2:
       if eventType == "leave":
         newState = self.continueDeparture(eventZone, eventCell)
+        reward = self.getReward(action)
       else:
-        reward = -1
+        reward = self.getReward(action, action_is_possible=False)
     else: # Error con acciones no existentes
-      raise Exception("Action: not defined")
+      raise Exception(f"Action: {action} is not defined")
 
     # Validar Nuevo Estado
     if self.observation_space.contains(newState):
       self.__setVariables(newState)
     else:
-      reward = -1
+      reward = self.getReward(action, action_is_possible=False)
 
     validEvents = self.getValidEvents()
     rand = _np.random.uniform(low=0, high=len(validEvents)-1)
@@ -204,3 +206,20 @@ class HetnetEnv(gym.Env):
 
   def close(self):
     raise NotImplementedError
+
+  def getReward(self, action, action_is_possible=True):
+    # Estas variables tambien estan disponible para ser usadas en el calculo
+    s1,s2,s3,s4m,s5m=self.s1, self.s2, self.s3, self.s4m, self.s5m
+    s4f1,s5f2,e = self.s4f1, self.s5f2, self.e
+    reward = 0
+    if not action_is_possible:
+      reward = -1
+    else:
+      eventType, eventCell, eventZone = Events[e]
+      if eventType == 'handoff':
+        reward = 0
+      elif eventType == 'leave':
+        reward = 0
+      elif eventType == 'enter':
+        reward = 1
+    return reward
