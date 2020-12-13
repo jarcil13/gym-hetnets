@@ -5,20 +5,22 @@ import random
 
 from gym_hetnet.envs.hetnet_env import HetnetEnv
 
-def qLearning(env, train_episodes = 20000, max_steps=50):
+def timeToExecuteAction(state1,state2,action):
+    # r(x,y,a)
+    return 1
 
+def qLearning(env, config):
     # HYPERPARAMETERS
-    #train_episodes = 20000         # Total train episodes
-    test_episodes = 100           # Total test episodes
-    #max_steps = 50               # Max steps per episode
-    alpha = 0.7                   # Learning rate
-    gamma = 0.618                 # Discounting rate
+    train_episodes = config.getint('train_episodes')    # Total train episodes
+    max_steps=config.getint('max_steps')                # Max steps per episode
+    alpha = config.getfloat('alpha')                    # Learning rate
+    gamma = config.getfloat('gamma')                    # Discounting rate
 
     # EXPLORATION / EXPLOITATION PARAMETERS
-    epsilon = 1                   # Exploration rate
-    max_epsilon = 1               # Exploration probability at start
-    min_epsilon = 0.01            # Minimum exploration probability 
-    decay_rate = 0.01             # Exponential decay rate for exploration prob
+    epsilon=config.getfloat("epsilon")                   # Exploration rate
+    max_epsilon = config.getfloat('max_epsilon')         # Exploration probability at start
+    min_epsilon = config.getfloat('min_epsilon')         # Minimum exploration probability 
+    decay_rate = config.getfloat('decay_rate')           # Exponential decay rate for exploration prob
 
     action_size = env.action_space.n
     state_size = env.observation_space.n
@@ -33,7 +35,8 @@ def qLearning(env, train_episodes = 20000, max_steps=50):
     training_rewards = []   # list of rewards
 
     for episode in range(train_episodes):
-        print("Episode: ",episode,"/",train_episodes)
+        if episode % 1000 == 0:
+            print("Episode: ",episode,"/",train_episodes)
         state = env.reset()    # Reset the environment
         cumulative_training_rewards = 0
         
@@ -52,7 +55,11 @@ def qLearning(env, train_episodes = 20000, max_steps=50):
             visitas[state, action] += 1
 
             # Update the Q table using the Bellman equation: Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
-            Q[state, action] = Q[state, action] + alpha * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action]) 
+
+            timeUnits = timeToExecuteAction(state, new_state, action)
+            aux = np.exp(-gamma*timeUnits)
+            Q[state,action] = Q[state,action] + alpha * (((1-aux)/gamma)* reward + (aux * np.max(Q[new_state, :])) - Q[state,action])
+
             cumulative_training_rewards += reward  # increment the cumulative reward        
             state = new_state         # Update the state
             
@@ -71,9 +78,28 @@ def qLearning(env, train_episodes = 20000, max_steps=50):
 
     return Q, visitas
 
-if __name__ == "__main__": 
-    # CREATE THE ENVIRONMENT
-    #env = gym.make('gym_hetnet:hetnet-v0', MacroMaxCapacity=2, FentoMaxCapacity=1)
-    env = HetnetEnv(2,1)
-    # Run Q-Learning
-    Q, visitas = qLearning(env)
+if __name__ == "__main__":
+    import configparser
+    import numpy as np
+    from gym_hetnet.envs.hetnet_env import HetnetEnv
+    from examples.qlearning import qLearning
+    import time
+
+    config = configparser.ConfigParser()
+    config.read("settings.ini")
+    config_sections = config.sections()
+    for experimentName in config_sections:
+        settings = config[experimentName]
+        print(f"Executing experiment section: {experimentName}")
+        env = HetnetEnv(settings.getint("maxMacro"),settings.getint("maxFento"))
+
+        start_time = time.time()
+
+        Q, visitas = qLearning(env, settings)
+
+        percent = np.count_nonzero(visitas)  / (visitas.shape[0]*visitas.shape[1])
+        print("--- %s minutes ---" % ((time.time() - start_time)/60))
+        print((percent * 100)," % visited\n")
+
+    print("Process finished")
+
